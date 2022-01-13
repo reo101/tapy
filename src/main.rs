@@ -1,14 +1,14 @@
 use gtk::{gio::SimpleAction, glib, prelude::*, Application};
 
-mod entry_completion;
-mod scrolled_window;
-mod media;
+mod ui;
+mod loaders;
+mod utils;
 
 fn main() {
     let application = Application::builder()
         .application_id("bg.reo101.tapy")
         .build();
-    application.connect_activate(scrolled_window::build_ui);
+    application.connect_activate(ui::build_ui);
 
     // When activated, shuts down the application
     let quit = SimpleAction::new("quit", None);

@@ -1,7 +1,7 @@
 use std::io::{self, ErrorKind, Error};
 use std::path::PathBuf;
 
-use directories_next::ProjectDirs;
+use crate::utils;
 
 pub fn media_iter() -> io::Result<impl Iterator<Item = PathBuf>> {
     macro_rules! string_vec {
@@ -15,11 +15,10 @@ pub fn media_iter() -> io::Result<impl Iterator<Item = PathBuf>> {
     }
 
     // TODO: Load from config
-    let allowed_extensions = string_vec!["gif"];
+    let allowed_extensions = string_vec!["png", "gif", "mp4", "mkv"];
 
-    if let Some(proj_dirs) = ProjectDirs::from("bg", "reo101", "Tapy") {
-        return Ok(proj_dirs
-            .data_dir()
+    if let Some(media_path) = utils::media_path() {
+        return Ok(media_path
             .read_dir()?
             .map(|res| res.map(|e| e.path()))
             .filter_map(move |res| {
