@@ -15,15 +15,19 @@ Look no further - Tapy is here!
 
 Tapy is a tool for tagging and quickly accessing all kinds of media. Just open it up, write a few keywords into the search box and voilà - everything is now filtered to only show media that matches your search tags.
 
-## Dependencies (for now)
+Tapy consists of a backend and frontend server.
 
-- [dragon-drag-and-drop](https://github.com/mwh/dragon)
+## Build-time dependencies
+
+- Rust
+
+## Run-time dependencies
+
+- ...
 
 ## TODO
 
-- [ ] Load configuration from file
-- [ ] Create a custom MediaTile GObject (instead of hard-coded Box composition)
-- [ ] Implement GridView (instead of ListView) with configurable number of columns
-- [ ] Mute videos on start-up and possibly enable sound/playing on hover
-- [ ] Integrate drag-and-drop functionality by translating a part of [dragon](https://github.com/mwh/dragon) (Also made in GTK) in Rust
-- [ ] Keep an index of all media related to a certain tag for faster incremental filtering
+- Backend
+    - SQLite database (mayby with [Diesel](https://diesel.rs/))
+- Frontend
+    - Components for viewing and adding
