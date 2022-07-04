@@ -1,4 +1,5 @@
 target
-dist
 Cargo.lock
-logo/logo.xcf
+.env
+common/src/schema.rs
+frontend/dist
