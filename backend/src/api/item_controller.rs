@@ -18,9 +18,19 @@ async fn add(mut parts: awmp::Parts) -> impl Responder {
 
     let tags_vec = tags.split(',').collect::<Vec<_>>();
 
-    println!("File: {}, Tags: {:?}", file.display(), tags_vec);
+    let tags_vec = match &tags_vec[..] {
+        [""] => vec![],
+        _ => tags_vec,
+    };
 
-    HttpResponse::NotImplemented()
+    let conn = common::db::establish_connection();
+    let res = common::crud::items::create_item_with_tags(
+        &conn,
+        &file.into_os_string().into_string().unwrap(),
+        tags_vec,
+    );
+
+    HttpResponse::Ok().json(res)
 }
 
 #[get("/get/{id}")]
@@ -46,8 +56,6 @@ async fn get_by_tags(parts: awmp::Parts) -> impl Responder {
         [""] => vec![],
         _ => tags_vec,
     };
-
-    println!("Tags: {:?}", tags_vec);
 
     let conn = common::db::establish_connection();
     let res = common::crud::items::read_items_by_tags(&conn, tags_vec);

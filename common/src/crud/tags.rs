@@ -6,6 +6,8 @@ pub fn create_tag(conn: &SqliteConnection, name: &str) -> i32 {
 
     let new_tag = NewTag { name };
 
+    // NOTE: https://github.com/diesel-rs/diesel/discussions/2684
+
     diesel::insert_into(tags::table)
         .values(&new_tag)
         // .returning(tags::id)
@@ -19,15 +21,22 @@ pub fn create_tag(conn: &SqliteConnection, name: &str) -> i32 {
         .id
 }
 
-pub fn read_tag(conn: &SqliteConnection, id: i32) -> Option<Tag> {
+pub fn read_tag_by_id(conn: &SqliteConnection, id: i32) -> Option<Tag> {
     use crate::schema::tags;
 
     tags::table
         .find(id)
-        .load::<Tag>(conn)
-        .ok()?
-        .first()
-        .cloned()
+        .get_result::<Tag>(conn)
+        .ok()
+}
+
+pub fn read_tag_by_name(conn: &SqliteConnection, name: &str) -> Option<Tag> {
+    use crate::schema::tags;
+
+    tags::table
+        .filter(tags::name.eq(name))
+        .get_result::<Tag>(conn)
+        .ok()
 }
 
 pub fn update_tag(conn: &SqliteConnection, id: i32, path: &str) -> Option<usize> {
