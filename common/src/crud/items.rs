@@ -25,6 +25,24 @@ pub fn create_item(conn: &SqliteConnection, path: &str) -> i32 {
         .id
 }
 
+pub fn create_item_with_tags(conn: &SqliteConnection, path: &str, tags_vec: Vec<&str>) -> i32 {
+    let item_id = create_item(conn, path);
+
+    tags_vec.into_iter()
+        .map(|name| {
+            if let Some(tag) = crate::crud::tags::read_tag_by_name(conn, name) {
+                tag.id
+            } else {
+                crate::crud::tags::create_tag(conn, name)
+            }
+        })
+        .for_each(|tag_id| {
+            crate::crud::items_tags::create_item_tag(conn, item_id, tag_id);
+        });
+
+    item_id
+}
+
 pub fn read_item(conn: &SqliteConnection, id: i32) -> Option<Item> {
     use crate::schema::items;
 
@@ -46,7 +64,7 @@ pub fn read_items_by_tags(conn: &SqliteConnection, tags_vec: Vec<&str>) -> Optio
         .map(|res_items: Vec<(i32, String, String)>| {
             res_items
                 .into_iter()
-                // NOTE:                                          &&tag[..] == &tag.as_str()
+                // NOTE: &&tag[..] == &tag.as_str()
                 .filter(|(_, _, tag)| tags_vec.is_empty() || tags_vec.contains(&tag.as_str()))
                 .map(|(id, path, _)| Item { id, path })
                 .collect::<Vec<Item>>()
