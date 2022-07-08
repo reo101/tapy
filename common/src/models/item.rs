@@ -3,7 +3,7 @@ use diesel::Queryable;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Queryable, Serialize, Deserialize, Debug)]
+#[derive(Queryable, Clone, Serialize, Deserialize, Debug)]
 pub struct Item {
     pub id: i32,
     pub path: String,

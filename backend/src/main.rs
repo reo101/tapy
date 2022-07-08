@@ -1,22 +1,11 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, middleware::Logger};
 use actix_web_lab::web::spa;
 
-#[get("/add")]
-async fn add(req_body: String) -> impl Responder {
-    HttpResponse::NoContent().body("Shte iz4aka6 malko")
-}
+mod api;
 
 #[post("/echo")]
 async fn echo(req_body: String) -> impl Responder {
     HttpResponse::Ok().body(req_body)
-}
-
-#[post("/test")]
-async fn test(req_body: String) -> impl Responder {
-    let conn = common::establish_connection();
-    let kek = common::create_item(&conn, &req_body);
-
-    HttpResponse::Ok().body(format!("Bytes: {}", kek))
 }
 
 #[actix_web::main]
@@ -31,7 +20,13 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(logger)
             // API
-            .service(test)
+            .service(
+                web::scope("/api")
+                    .service(api::item_controller::add)
+                    .service(api::item_controller::get_by_tags)
+                    .service(api::item_controller::get_by_id)
+                    .service(api::item_controller::delete_by_id)
+            )
             // SPA
             .service(
                 spa()
