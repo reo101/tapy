@@ -1,5 +1,5 @@
-use crate::models::{item_tag::{ItemTag, NewItemTag}, item};
-use diesel::{dsl::sql, prelude::*};
+use crate::models::item_tag::{ItemTag, NewItemTag};
+use diesel::prelude::*;
 
 pub fn create_item_tag(conn: &SqliteConnection, item_id: i32, tag_id: i32) {
     use crate::schema::items_tags;

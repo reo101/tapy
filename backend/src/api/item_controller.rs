@@ -1,5 +1,9 @@
 use common::util::fs::*;
-use std::path::Path;
+use std::{
+    fs::File,
+    io::{BufReader, Read, Write},
+    path::PathBuf,
+};
 
 use actix_web::{delete, get, post, web, HttpResponse, Responder};
 
@@ -9,7 +13,23 @@ async fn add(mut parts: awmp::Parts) -> impl Responder {
         .files
         .take("file")
         .pop()
-        .and_then(|f| f.persist_in(media_path().unwrap()).ok())
+        .and_then(|f| {
+            let sanitized_file_name = f.sanitized_file_name().to_string();
+
+            let old_file_path = f.persist_in("/tmp").ok()?;
+            let old_file = File::open(old_file_path).ok()?;
+
+            let new_file_path = media_path()?.join(sanitized_file_name);
+            let mut new_file = File::create(&new_file_path).ok()?;
+
+            let mut reader = BufReader::new(old_file);
+            let mut buffer = Vec::<u8>::new();
+
+            reader.read_to_end(&mut buffer).ok()?;
+            new_file.write_all(buffer.as_slice()).ok()?;
+
+            Some(new_file_path)
+        })
         .unwrap();
 
     let texts = parts.texts.as_hash_map();
@@ -40,7 +60,37 @@ async fn get_by_id(id: web::Path<i32>) -> impl Responder {
 
     match res {
         Option::None => HttpResponse::NotFound().body(format!("Item not found with ID {}", *id)),
-        Option::Some(item) => HttpResponse::Ok().json(item),
+        Option::Some(item) => {
+            let path = item.path;
+            let path_buf = PathBuf::from(&path);
+
+            let mut f = File::open(&path).unwrap();
+
+            let mut buf = Vec::<u8>::new();
+
+            std::io::Read::read_to_end(&mut f, &mut buf).unwrap();
+
+            HttpResponse::Ok()
+                .insert_header((
+                    "Content-Type",
+                    mime_guess::from_ext(
+                        path_buf
+                            .extension()
+                            .and_then(|ext| ext.to_str())
+                            .unwrap_or(""),
+                    )
+                    .first_or_octet_stream(),
+                ))
+                .insert_header((
+                    "Content-Disposition",
+                    format!(
+                        "{}; filename=\"{}\"",
+                        if true { "inline" } else { "attachment" },
+                        PathBuf::from(&path).file_name().unwrap().to_str().unwrap()
+                    ),
+                ))
+                .body(buf)
+        }
     }
 }
 
@@ -69,7 +119,7 @@ async fn delete_by_id(id: web::Path<i32>) -> impl Responder {
     let res = common::crud::items::delete_item(&conn, *id);
 
     match res {
-        Option::None => HttpResponse::NotFound().body(format!("Item not found with ID {}", *id)),
         Option::Some(count) => HttpResponse::Ok().body(format!("Deleted {} item(s)", count)),
+        Option::None => HttpResponse::NotFound().body(format!("Item not found with ID {}", *id)),
     }
 }

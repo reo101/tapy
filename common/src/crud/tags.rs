@@ -21,6 +21,14 @@ pub fn create_tag(conn: &SqliteConnection, name: &str) -> i32 {
         .id
 }
 
+pub fn read_tags(conn: &SqliteConnection) -> Option<Vec<Tag>> {
+    use crate::schema::tags;
+
+    tags::table
+        .get_results::<Tag>(conn)
+        .ok()
+}
+
 pub fn read_tag_by_id(conn: &SqliteConnection, id: i32) -> Option<Tag> {
     use crate::schema::tags;
 

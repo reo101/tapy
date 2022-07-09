@@ -1,7 +1,6 @@
 use crate::schema::tags;
 use diesel::Queryable;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Queryable, Clone, Serialize, Deserialize, Debug)]
 pub struct Tag {
