@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::models::{
     item::{Item, NewItem},
     item_tag::ItemTag,
@@ -57,19 +59,23 @@ pub fn read_items_by_tags(conn: &SqliteConnection, tags_vec: Vec<&str>) -> Optio
     let res_items = items_tags::table
         .inner_join(items::table)
         .inner_join(tags::table)
+        // .select((items::id,
+        //          items::path,
+        //          sql::<Text>()))
         .select((items::id, items::path, tags::name))
+        // .grouped_by(items::id)
+        // .distinct()
         .get_results::<(i32, String, String)>(conn)
         // .default_selection()
         // .get_results::<ItemTag>(conn)
-        .map(|res_items: Vec<(i32, String, String)>| {
-            res_items
-                .into_iter()
-                // NOTE: &&tag[..] == &tag.as_str()
-                .filter(|(_, _, tag)| tags_vec.is_empty() || tags_vec.contains(&tag.as_str()))
-                .map(|(id, path, _)| Item { id, path })
-                .collect::<Vec<Item>>()
-        })
-        .unwrap_or_default();
+        .unwrap_or_default()
+        .into_iter()
+        // NOTE: &&tag[..] == &tag.as_str()
+        .filter(|(_, _, tag)| tags_vec.is_empty() || tags_vec.contains(&tag.as_str()))
+        .map(|(id, path, _)| Item { id, path })
+        .collect::<HashSet<Item>>()
+        .into_iter()
+        .collect::<Vec<Item>>();
 
     Some(res_items)
 }

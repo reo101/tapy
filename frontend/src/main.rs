@@ -1,22 +1,63 @@
+use yew::functional::*;
 use yew::prelude::*;
+use yew_router::prelude::*;
 
-#[function_component(App)]
+#[derive(Routable, Debug, Clone, PartialEq)]
+pub enum Route {
+    #[at("/")]
+    Home,
+    #[at("/get/{id}")]
+    Item { id: u32 },
+    #[at("/get/?tags={}")]
+    ItemsByTags { tags: String },
+    #[at("/add")]
+    Add,
+    #[not_found]
+    #[at("/404")]
+    NotFound,
+}
+
+mod componenets;
+
+use componenets::add::Add;
+use componenets::home::Home;
+use componenets::item::Item;
+use componenets::items_by_tags::ItemsByTags;
+use componenets::not_found::NotFound;
+
+#[function_component(Main)]
 fn app() -> Html {
     html! {
-        <div>
-            {"Hello!"}
-        </div>
+        <BrowserRouter>
+            <
+                Switch<Route>
+                render={Switch::render(switch)}
+            />
+        </BrowserRouter>
     }
+}
 
-    // <BrowserRouter>
-    //     <
-    //         Switch<Route>
-    //         render={Switch::render(switch)}
-    //     />
-    // </BrowserRouter>
+fn switch(routes: &Route) -> Html {
+    match routes {
+        Route::Home => html! {
+            <Home />
+        },
+        Route::NotFound => html! {
+            <NotFound />
+        },
+        Route::Item { id } => html! {
+            <Item id={id.clone()} />
+        },
+        Route::ItemsByTags { tags } => html! {
+            <ItemsByTags tags={tags.clone()} />
+        },
+        Route::Add => html! {
+            <Add />
+        },
+    }
 }
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
-    yew::start_app::<App>();
+    yew::start_app::<Main>();
 }

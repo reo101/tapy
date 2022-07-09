@@ -1,6 +1,6 @@
 <div align="center">
     <h1> Tapy </h1>
-    <img src="./logo/logo.png" alt="logo" width="256" height="256">
+    <img src="./assets/logo.png" alt="logo" width="256" height="256">
 </div>
 
 ---

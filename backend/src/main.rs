@@ -26,6 +26,7 @@ async fn main() -> std::io::Result<()> {
                     .service(api::item_controller::get_by_tags)
                     .service(api::item_controller::get_by_id)
                     .service(api::item_controller::delete_by_id)
+                    .service(api::tag_controller::get_tags)
             )
             // SPA
             .service(

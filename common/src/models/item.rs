@@ -9,6 +9,20 @@ pub struct Item {
     pub path: String,
 }
 
+impl PartialEq for Item {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for Item {}
+
+impl std::hash::Hash for Item {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
 #[derive(Insertable)]
 #[table_name = "items"]
 pub struct NewItem<'a> {
