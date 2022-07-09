@@ -1,4 +1,4 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, middleware::Logger};
+use actix_web::{post, web, App, HttpResponse, HttpServer, Responder, middleware::Logger};
 use actix_web_lab::web::spa;
 
 mod api;
@@ -18,6 +18,7 @@ async fn main() -> std::io::Result<()> {
         let logger = Logger::default();
 
         App::new()
+            // Logging
             .wrap(logger)
             // API
             .service(
@@ -26,6 +27,7 @@ async fn main() -> std::io::Result<()> {
                     .service(api::item_controller::get_by_tags)
                     .service(api::item_controller::get_by_id)
                     .service(api::item_controller::delete_by_id)
+                    .service(api::tag_controller::get_tags)
             )
             // SPA
             .service(

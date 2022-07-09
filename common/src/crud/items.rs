@@ -1,8 +1,6 @@
-use crate::models::{
-    item::{Item, NewItem},
-    item_tag::ItemTag,
-    tag::Tag,
-};
+use std::collections::HashSet;
+
+use crate::models::item::{Item, NewItem};
 use diesel::{dsl::sql, prelude::*};
 
 pub fn create_item(conn: &SqliteConnection, path: &str) -> i32 {
@@ -59,17 +57,13 @@ pub fn read_items_by_tags(conn: &SqliteConnection, tags_vec: Vec<&str>) -> Optio
         .inner_join(tags::table)
         .select((items::id, items::path, tags::name))
         .get_results::<(i32, String, String)>(conn)
-        // .default_selection()
-        // .get_results::<ItemTag>(conn)
-        .map(|res_items: Vec<(i32, String, String)>| {
-            res_items
-                .into_iter()
-                // NOTE: &&tag[..] == &tag.as_str()
-                .filter(|(_, _, tag)| tags_vec.is_empty() || tags_vec.contains(&tag.as_str()))
-                .map(|(id, path, _)| Item { id, path })
-                .collect::<Vec<Item>>()
-        })
-        .unwrap_or_default();
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|(_, _, tag)| tags_vec.is_empty() || tags_vec.contains(&tag.as_str()))
+        .map(|(id, path, _)| Item { id, path })
+        .collect::<HashSet<Item>>()
+        .into_iter()
+        .collect::<Vec<Item>>();
 
     Some(res_items)
 }
