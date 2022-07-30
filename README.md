@@ -15,19 +15,13 @@ Look no further - Tapy is here!
 
 Tapy is a tool for tagging and quickly accessing all kinds of media. Just open it up, write a few keywords into the search box and voilà - everything is now filtered to only show media that matches your search tags.
 
-Tapy consists of a backend and frontend server.
+Tapy consists of a backend and frontend server and can be consumed either through the provided frontend or directly through the `REST` API at `/api`.
 
 ## Build-time dependencies
 
 - Rust
 
-## Run-time dependencies
-
-- ...
-
 ## TODO
 
-- Backend
-    - SQLite database (mayby with [Diesel](https://diesel.rs/))
 - Frontend
-    - Components for viewing and adding
+    - (Working) Components for viewing and adding Items
