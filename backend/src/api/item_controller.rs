@@ -102,6 +102,7 @@ async fn get_by_tags(parts: awmp::Parts) -> impl Responder {
 
     let tags_vec = tags.split(',').collect::<Vec<_>>();
 
+    // NOTE: `.split` on an empty string doesn't return an empty iterator
     let tags_vec = match &tags_vec[..] {
         [""] => vec![],
         _ => tags_vec,
