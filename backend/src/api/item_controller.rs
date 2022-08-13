@@ -29,28 +29,32 @@ async fn add(mut parts: awmp::Parts) -> impl Responder {
             new_file.write_all(buffer.as_slice()).ok()?;
 
             Some(new_file_path)
-        })
-        .unwrap();
+        });
 
-    let texts = parts.texts.as_hash_map();
+    match file {
+        Some(file) => {
+            let texts = parts.texts.as_hash_map();
 
-    let tags = texts.get("tags").unwrap().to_string();
+            let tags = texts.get("tags").unwrap().to_string();
 
-    let tags_vec = tags.split(',').collect::<Vec<_>>();
+            let tags_vec = tags.split(',').collect::<Vec<_>>();
 
-    let tags_vec = match &tags_vec[..] {
-        [""] => vec![],
-        _ => tags_vec,
-    };
+            let tags_vec = match &tags_vec[..] {
+                [""] => vec![],
+                _ => tags_vec,
+            };
 
-    let conn = common::db::establish_connection();
-    let res = common::crud::items::create_item_with_tags(
-        &conn,
-        &file.into_os_string().into_string().unwrap(),
-        tags_vec,
-    );
+            let conn = common::db::establish_connection();
+            let res = common::crud::items::create_item_with_tags(
+                &conn,
+                &file.into_os_string().into_string().unwrap(),
+                tags_vec,
+            );
 
-    HttpResponse::Ok().json(res)
+            HttpResponse::Ok().json(res)
+        },
+        None => HttpResponse::InternalServerError().body("Error adding new item"),
+    }
 }
 
 #[get("/get/{id}")]
