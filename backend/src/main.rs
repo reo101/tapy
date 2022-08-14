@@ -23,11 +23,14 @@ async fn main() -> std::io::Result<()> {
             // API
             .service(
                 web::scope("/api")
+                    // Item Controller
                     .service(api::item_controller::add)
-                    // .service(api::item_controller::get_by_tags)
                     .service(api::item_controller::get_all)
                     .service(api::item_controller::get_by_id)
+                    .service(api::item_controller::get_by_tags)
                     .service(api::item_controller::delete_by_id)
+                    // Tag Controller
+                    .service(api::tag_controller::get_all)
                     .service(api::tag_controller::get_tags)
             )
             // SPA
