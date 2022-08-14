@@ -17,13 +17,13 @@ pub enum Route {
     NotFound,
 }
 
-mod componenets;
+mod components;
 
-use componenets::add::Add;
-use componenets::home::Home;
-use componenets::item::Item;
-use componenets::items_by_tags::ItemsByTags;
-use componenets::not_found::NotFound;
+use components::add::Add;
+use components::home::Home;
+use components::item::Item;
+use components::items_by_tags::ItemsByTags;
+use components::not_found::NotFound;
 
 #[function_component(Main)]
 fn app() -> Html {
