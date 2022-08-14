@@ -62,16 +62,40 @@ pub struct ItemListProps {
 
 #[function_component(ItemList)]
 pub fn item_list(ItemListProps { items }: &ItemListProps) -> Html {
+    fn is_something(exts: Vec<&'static str>) -> impl Fn(&Item) -> bool {
+        move |item: &Item| -> bool {
+            exts.iter()
+                .map(|ext| item.path.ends_with(ext))
+                .any(|res| res)
+        }
+    }
+
+    let is_video = is_something(vec!["mp4, webm"]);
+    let is_picture = is_something(vec!["png", "gif", "jpg", "jpeg", "svg"]);
+
     items
         .iter()
         .map(|item| {
             html! {
-                <p>
-                    <@{if item.path.ends_with("mp4") { "video" } else { "img" }}
+                <div>
+                    <@{
+                        if is_video(item) {
+                            "video"
+                        } else if is_picture(item) {
+                            "img"
+                        } else {
+                            "iframe"
+                        }}
                         src = { format!("http://localhost:8080/api/get/{}", item.id) }
                      >
                     </@>
-                </p>
+                    <span hidden=true>
+                        {
+                            // TODO: change structure to allow sending tags together with item
+                            "TODO"
+                        }
+                    </span>
+                </div>
             }
         })
         .collect::<Html>()
