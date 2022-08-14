@@ -2,14 +2,16 @@ use yew::functional::*;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-#[derive(Routable, Debug, Clone, PartialEq)]
+#[derive(Routable, Debug, Clone, PartialEq, Eq)]
 pub enum Route {
     #[at("/")]
     Home,
     #[at("/get/{id}")]
     Item { id: u32 },
-    #[at("/get/?tags={}")]
-    ItemsByTags { tags: String },
+    // #[at("/get?tags={}")]
+    // Gallery { tags: String },
+    #[at("/gallery")]
+    Gallery,
     #[at("/add")]
     Add,
     #[not_found]
@@ -22,7 +24,7 @@ mod components;
 use components::add::Add;
 use components::home::Home;
 use components::item::Item;
-use components::items_by_tags::ItemsByTags;
+use components::gallery::Gallery;
 use components::not_found::NotFound;
 
 #[function_component(Main)]
@@ -46,10 +48,13 @@ fn switch(routes: &Route) -> Html {
             <NotFound />
         },
         Route::Item { id } => html! {
-            <Item id={id.clone()} />
+            <Item id={*id} />
         },
-        Route::ItemsByTags { tags } => html! {
-            <ItemsByTags tags={tags.clone()} />
+        // Route::Gallery { tags } => html! {
+        //     <Gallery tags={tags.clone()} />
+        // },
+        Route::Gallery => html! {
+            <Gallery tags={""} />
         },
         Route::Add => html! {
             <Add />
