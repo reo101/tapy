@@ -1,13 +1,8 @@
 use actix_cors::Cors;
-use actix_web::{middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{middleware::Logger, web, App, HttpServer};
 use actix_web_lab::web::spa;
 
 mod api;
-
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
