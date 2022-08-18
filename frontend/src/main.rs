@@ -1,3 +1,7 @@
+#[macro_use]
+extern crate dotenv_codegen;
+
+use dotenv::dotenv;
 use yew::functional::*;
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -64,5 +68,7 @@ fn switch(routes: &Route) -> Html {
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
+    dotenv().ok();
+
     yew::start_app::<Main>();
 }

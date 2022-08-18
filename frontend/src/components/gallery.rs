@@ -1,4 +1,4 @@
-// use common::models::item::Item;
+// use common::models::item::Item; // FIXME: doens't compile on wasm
 use reqwasm::http::Request;
 use serde::{Deserialize, Serialize};
 use yew::functional::*;
@@ -12,7 +12,6 @@ pub struct Item {
 
 #[derive(Clone, Debug, PartialEq, Eq, Properties)]
 pub struct GalleryProps {
-    // pub tags: Option<String>,
     pub tags: String,
 }
 
@@ -31,14 +30,16 @@ pub fn gallery(gallery_props: &GalleryProps) -> Html {
                     return;
                 }
 
-                let fetched_items: Vec<Item> = Request::get("http://localhost:8080/api/get")
-                    .header("tags", tags.as_str())
-                    .send()
-                    .await
-                    .unwrap()
-                    .json()
-                    .await
-                    .unwrap();
+                let fetched_items: Vec<Item> =
+                    Request::get(&format!("{}/get/all", dotenv!("BACKEND_URL")).to_owned())
+                        .header("tags", tags.as_str())
+                        .header("Content-Type", "application/json")
+                        .send()
+                        .await
+                        .unwrap()
+                        .json()
+                        .await
+                        .unwrap();
 
                 items.set(fetched_items);
             });
@@ -63,10 +64,7 @@ pub struct ItemListProps {
 #[function_component(ItemList)]
 pub fn item_list(ItemListProps { items }: &ItemListProps) -> Html {
     fn is_something(exts: Vec<&'static str>) -> impl Fn(&Item) -> bool {
-        move |item: &Item| -> bool {
-            exts.iter()
-                .any(|ext| item.path.ends_with(ext))
-        }
+        move |item: &Item| -> bool { exts.iter().any(|ext| item.path.ends_with(ext)) }
     }
 
     let is_video = is_something(vec!["mp4, webm"]);
@@ -77,22 +75,22 @@ pub fn item_list(ItemListProps { items }: &ItemListProps) -> Html {
         .map(|item| {
             html! {
                 <div>
-                    <@{
-                        if is_video(item) {
-                            "video"
-                        } else if is_picture(item) {
-                            "img"
-                        } else {
-                            "iframe"
-                        }}
-                        src = { format!("http://localhost:8080/api/get/{}", item.id) }
-                     >
+                <@{
+                    if is_video(item) {
+                        "video"
+                    } else if is_picture(item) {
+                        "img"
+                    } else {
+                        "iframe"
+                    }}
+                src = { format!("{}/get/{}", dotenv!("BACKEND_URL"), item.id) }
+                    >
                     </@>
                     <span hidden=true>
-                        {
-                            // TODO: change structure to allow sending tags together with item
-                            "TODO"
-                        }
+                    {
+                        // TODO: change structure to allow sending tags together with item
+                        "TODO"
+                    }
                     </span>
                 </div>
             }
