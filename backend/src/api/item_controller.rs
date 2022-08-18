@@ -102,21 +102,25 @@ async fn get_by_id(id: web::Path<i32>) -> impl Responder {
 async fn get_by_tags(parts: awmp::Parts) -> impl Responder {
     let texts = parts.texts.as_hash_map();
 
-    // TODO: don't unwrap
-    let tags = texts.get("tags").unwrap().to_string();
+    let tags = texts.get("tags");
 
-    let tags_vec = tags.split(',').collect::<Vec<_>>();
+    match tags {
+        Option::None => HttpResponse::BadRequest().body("Bad request: missing tags field"),
+        Option::Some(tags) => {
+            let tags_vec = tags.split(',').collect::<Vec<_>>();
 
-    // NOTE: `.split` on an empty string doesn't return an empty iterator
-    let tags_vec = match &tags_vec[..] {
-        [""] => vec![],
-        _ => tags_vec,
-    };
+            // NOTE: `.split` on an empty string doesn't return an empty iterator
+            let tags_vec = match &tags_vec[..] {
+                [""] => vec![],
+                _ => tags_vec,
+            };
 
-    let conn = common::db::establish_connection();
-    let res = common::crud::items::read_items_by_tags(&conn, tags_vec);
+            let conn = common::db::establish_connection();
+            let res = common::crud::items::read_items_by_tags(&conn, tags_vec);
 
-    HttpResponse::Ok().json(res)
+            HttpResponse::Ok().json(res)
+        }
+    }
 }
 
 #[get("/get/all")]
