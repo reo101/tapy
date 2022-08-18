@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use directories_next::ProjectDirs;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 
 fn data_path() -> Option<PathBuf> {
     let path = ProjectDirs::from("bg", "reo101", "Tapy")?.data_dir().to_path_buf();

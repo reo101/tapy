@@ -1,7 +1,7 @@
 #[macro_use]
-extern crate dotenv_codegen;
+extern crate dotenvy_macro;
 
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use yew::functional::*;
 use yew::prelude::*;
 use yew_router::prelude::*;

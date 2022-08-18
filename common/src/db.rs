@@ -1,5 +1,5 @@
 use diesel::prelude::*;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 
 pub fn establish_connection() -> SqliteConnection {
     dotenv().ok();
