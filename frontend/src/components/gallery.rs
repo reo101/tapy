@@ -65,8 +65,7 @@ pub fn item_list(ItemListProps { items }: &ItemListProps) -> Html {
     fn is_something(exts: Vec<&'static str>) -> impl Fn(&Item) -> bool {
         move |item: &Item| -> bool {
             exts.iter()
-                .map(|ext| item.path.ends_with(ext))
-                .any(|res| res)
+                .any(|ext| item.path.ends_with(ext))
         }
     }
 
