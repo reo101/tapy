@@ -1,4 +1,5 @@
-use actix_web::{post, web, App, HttpResponse, HttpServer, Responder, middleware::Logger};
+use actix_cors::Cors;
+use actix_web::{middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder};
 use actix_web_lab::web::spa;
 
 mod api;
@@ -16,10 +17,13 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         let logger = Logger::default();
+        let cors = Cors::permissive().allow_any_origin();
 
         App::new()
             // Logging
             .wrap(logger)
+            // CORS
+            .wrap(cors)
             // API
             .service(
                 web::scope("/api")
