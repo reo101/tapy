@@ -1,8 +1,15 @@
-use actix_cors::Cors;
-use actix_web::{middleware::Logger, web, App, HttpServer};
-use actix_web_lab::web::spa;
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate diesel_migrations;
+extern crate dotenvy;
 
-mod api;
+pub mod db;
+pub mod api;
+pub mod services;
+
+use actix_cors::Cors;
+use actix_web::{middleware::Logger, App, HttpServer};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -13,33 +20,19 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         let logger = Logger::default();
         let cors = Cors::permissive().allow_any_origin();
+        let pool = db::db::establish_connection();
 
         App::new()
             // Logging
             .wrap(logger)
             // CORS
             .wrap(cors)
+            // DB
+            .app_data(pool)
             // API
-            .service(
-                web::scope("/api")
-                    // Item Controller
-                    .service(api::item_controller::add)
-                    .service(api::item_controller::get_all)
-                    .service(api::item_controller::get_by_id)
-                    .service(api::item_controller::get_by_tags)
-                    .service(api::item_controller::delete_by_id)
-                    // Tag Controller
-                    .service(api::tag_controller::get_all)
-                    .service(api::tag_controller::get_tags)
-            )
+            .configure(services::api::init_routes)
             // SPA
-            .service(
-                spa()
-                    .index_file("./dist/index.html")
-                    .static_resources_mount("/")
-                    .static_resources_location("./dist")
-                    .finish(),
-            )
+            .configure(services::spa::init_routes)
     })
     .bind(("0.0.0.0", 8080))?
     .run()

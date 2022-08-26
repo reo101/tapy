@@ -10,17 +10,16 @@ COPY . .
 
 ARG DATABASE_URL="/usr/src/tapy/database.db"
 
-RUN cd common && diesel migration run
 RUN cd frontend && trunk build --release
 RUN cargo build --release
 
 # # Run
 # FROM keinos/sqlite3:latest
 #
-# COPY --from=build /usr/src/tapy/target/release/tapy-backend /usr/local/bin/tapy-backend
+# COPY --from=build /usr/src/tapy/target/release/tapy_backend /usr/local/bin/tapy_backend
 # COPY --from=build /usr/src/tapy/frontend/dist /usr/local/bin/dist
 
-COPY /usr/src/tapy/target/release/tapy-backend /usr/local/bin/tapy-backend
+COPY /usr/src/tapy/target/release/tapy_backend /usr/local/bin/tapy_backend
 COPY /usr/src/tapy/frontend/dist /usr/local/bin/dist
 
 WORKDIR /usr/local/bin

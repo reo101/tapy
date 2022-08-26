@@ -1,4 +1,4 @@
-use crate::schema::tags;
+use crate::db::schema::tags;
 use diesel::Queryable;
 use serde::{Deserialize, Serialize};
 

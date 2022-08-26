@@ -1,8 +1,8 @@
-use crate::models::tag::{Tag, NewTag};
+use crate::db::models::tag::{Tag, NewTag};
 use diesel::{dsl::sql, prelude::*};
 
 pub fn create_tag(conn: &SqliteConnection, name: &str) -> i32 {
-    use crate::schema::tags;
+    use crate::db::schema::tags;
 
     let new_tag = NewTag { name };
 
@@ -22,7 +22,7 @@ pub fn create_tag(conn: &SqliteConnection, name: &str) -> i32 {
 }
 
 pub fn read_tags(conn: &SqliteConnection) -> Option<Vec<Tag>> {
-    use crate::schema::tags;
+    use crate::db::schema::tags;
 
     tags::table
         .get_results::<Tag>(conn)
@@ -30,7 +30,7 @@ pub fn read_tags(conn: &SqliteConnection) -> Option<Vec<Tag>> {
 }
 
 pub fn read_tag_by_id(conn: &SqliteConnection, id: i32) -> Option<Tag> {
-    use crate::schema::tags;
+    use crate::db::schema::tags;
 
     tags::table
         .find(id)
@@ -39,7 +39,7 @@ pub fn read_tag_by_id(conn: &SqliteConnection, id: i32) -> Option<Tag> {
 }
 
 pub fn read_tag_by_name(conn: &SqliteConnection, name: &str) -> Option<Tag> {
-    use crate::schema::tags;
+    use crate::db::schema::tags;
 
     tags::table
         .filter(tags::name.eq(name))
@@ -48,9 +48,9 @@ pub fn read_tag_by_name(conn: &SqliteConnection, name: &str) -> Option<Tag> {
 }
 
 pub fn read_tags_by_item_id(conn: &SqliteConnection, id: i32) -> Option<Vec<Tag>> {
-    use crate::schema::items;
-    use crate::schema::items_tags;
-    use crate::schema::tags;
+    use crate::db::schema::items;
+    use crate::db::schema::items_tags;
+    use crate::db::schema::tags;
 
     let res_tags = items_tags::table
         .inner_join(items::table)
@@ -63,7 +63,7 @@ pub fn read_tags_by_item_id(conn: &SqliteConnection, id: i32) -> Option<Vec<Tag>
 }
 
 pub fn update_tag(conn: &SqliteConnection, id: i32, path: &str) -> Option<usize> {
-    use crate::schema::tags;
+    use crate::db::schema::tags;
 
     diesel::update(tags::table.find(id))
         .set(tags::name.eq(path))
@@ -72,7 +72,7 @@ pub fn update_tag(conn: &SqliteConnection, id: i32, path: &str) -> Option<usize>
 }
 
 pub fn delete_tag(conn: &SqliteConnection, id: i32) -> Option<usize> {
-    use crate::schema::tags;
+    use crate::db::schema::tags;
 
     diesel::delete(tags::table.filter(tags::id.eq(id)))
         .execute(conn)

@@ -1,4 +1,3 @@
-// use common::models::item::Item; // FIXME: doens't compile on wasm
 use reqwasm::http::Request;
 use serde::{Deserialize, Serialize};
 use yew::functional::*;

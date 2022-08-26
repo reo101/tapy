@@ -1,10 +1,10 @@
 use std::collections::HashSet;
 
-use crate::models::item::{Item, NewItem};
+use crate::db::models::item::{Item, NewItem};
 use diesel::{dsl::sql, prelude::*};
 
 pub fn create_item(conn: &SqliteConnection, path: &str) -> i32 {
-    use crate::schema::items;
+    use crate::db::schema::items;
 
     let new_item = NewItem { path };
 
@@ -28,29 +28,29 @@ pub fn create_item_with_tags(conn: &SqliteConnection, path: &str, tags_vec: Vec<
 
     tags_vec.into_iter()
         .map(|name| {
-            if let Some(tag) = crate::crud::tags::read_tag_by_name(conn, name) {
+            if let Some(tag) = crate::db::crud::tags::read_tag_by_name(conn, name) {
                 tag.id
             } else {
-                crate::crud::tags::create_tag(conn, name)
+                crate::db::crud::tags::create_tag(conn, name)
             }
         })
         .for_each(|tag_id| {
-            crate::crud::items_tags::create_item_tag(conn, item_id, tag_id);
+            crate::db::crud::items_tags::create_item_tag(conn, item_id, tag_id);
         });
 
     item_id
 }
 
 pub fn read_item(conn: &SqliteConnection, id: i32) -> Option<Item> {
-    use crate::schema::items;
+    use crate::db::schema::items;
 
     items::table.find(id).get_result::<Item>(conn).ok()
 }
 
 pub fn read_items_by_tags(conn: &SqliteConnection, tags_vec: Vec<&str>) -> Option<Vec<Item>> {
-    use crate::schema::items;
-    use crate::schema::items_tags;
-    use crate::schema::tags;
+    use crate::db::schema::items;
+    use crate::db::schema::items_tags;
+    use crate::db::schema::tags;
 
     let res_items = items_tags::table
         .inner_join(items::table)
@@ -69,7 +69,7 @@ pub fn read_items_by_tags(conn: &SqliteConnection, tags_vec: Vec<&str>) -> Optio
 }
 
 pub fn update_item(conn: &SqliteConnection, id: i32, path: &str) -> Option<usize> {
-    use crate::schema::items;
+    use crate::db::schema::items;
 
     diesel::update(items::table.find(id))
         .set(items::path.eq(path))
@@ -78,7 +78,7 @@ pub fn update_item(conn: &SqliteConnection, id: i32, path: &str) -> Option<usize
 }
 
 pub fn delete_item(conn: &SqliteConnection, id: i32) -> Option<usize> {
-    use crate::schema::items;
+    use crate::db::schema::items;
 
     diesel::delete(items::table.filter(items::id.eq(id)))
         .execute(conn)

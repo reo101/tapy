@@ -1,5 +1,5 @@
 [package]
-name = "tapy-backend"
+name = "tapy_backend"
 version = "0.1.0"
 authors = ["Pavel Atanasov <pavel.atanasov2001@gmail.com>"]
 description = "Tapy (Tag and Copy) - A tool for tagging and quickly accessing all kinds of media"
@@ -9,12 +9,22 @@ edition = "2021"
 
 [dependencies]
 actix-web = { version = "4.1.0", features = ["openssl"] }
+actix-rt = "2.7.0"
 openssl = "0.10.40"
 awmp = "0.8.1"
 actix-cors = "0.6.2"
 actix-web-lab = "^0"
-diesel = { version = "^1.1.0", features = ["sqlite"] }
+diesel = { version = "1.4.8", features = ["sqlite"] }
 mime_guess = "2.0.4"
 env_logger = "0.9"
 serde = { version = "^1", features = ["derive"] }
-common = { path = "../common" }
+diesel_migrations = "1.4.0"
+r2d2 = "0.8.10"
+r2d2-diesel = "1.0.0"
+dotenvy = "0.15.1"
+directories-next = "2.0.0"
+uuid = { version = "^1.1", features = ["v4"] }
+strum_macros = "^0.24"
+strum = { version = "^0.24", features = ["derive"] }
+getrandom = { version = "^0.2.7", features = ["js"] }
+derive_more = "^0.99"
