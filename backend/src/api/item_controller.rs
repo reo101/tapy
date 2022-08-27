@@ -1,4 +1,4 @@
-use crate::db::util::fs::*;
+use crate::db::{util::fs::*, db::DbPool};
 use std::{
     fs::File,
     io::{BufReader, Read, Write},
@@ -6,9 +6,6 @@ use std::{
 };
 
 use actix_web::{delete, get, post, web, HttpRequest, HttpResponse, Responder};
-use diesel::SqliteConnection;
-use r2d2::Pool;
-use r2d2_diesel::ConnectionManager;
 
 #[post("/add")]
 async fn add(req: HttpRequest, mut parts: awmp::Parts) -> impl Responder {
@@ -44,7 +41,7 @@ async fn add(req: HttpRequest, mut parts: awmp::Parts) -> impl Responder {
             };
 
             let conn = req
-                .app_data::<Pool<ConnectionManager<SqliteConnection>>>()
+                .app_data::<DbPool>()
                 .unwrap()
                 .get()
                 .unwrap();
@@ -63,7 +60,7 @@ async fn add(req: HttpRequest, mut parts: awmp::Parts) -> impl Responder {
 #[get("/get/{id}")]
 async fn get_by_id(req: HttpRequest, id: web::Path<i32>) -> impl Responder {
     let conn = req
-        .app_data::<Pool<ConnectionManager<SqliteConnection>>>()
+        .app_data::<DbPool>()
         .unwrap()
         .get()
         .unwrap();
@@ -123,7 +120,7 @@ async fn get_by_tags(req: HttpRequest, parts: awmp::Parts) -> impl Responder {
             };
 
             let conn = req
-                .app_data::<Pool<ConnectionManager<SqliteConnection>>>()
+                .app_data::<DbPool>()
                 .unwrap()
                 .get()
                 .unwrap();
@@ -139,7 +136,7 @@ async fn get_all(req: HttpRequest) -> impl Responder {
     let tags_vec = vec![];
 
     let conn = req
-        .app_data::<Pool<ConnectionManager<SqliteConnection>>>()
+        .app_data::<DbPool>()
         .unwrap()
         .get()
         .unwrap();
@@ -151,7 +148,7 @@ async fn get_all(req: HttpRequest) -> impl Responder {
 #[delete("/delete/{id}")]
 async fn delete_by_id(req: HttpRequest, id: web::Path<i32>) -> impl Responder {
     let conn = req
-        .app_data::<Pool<ConnectionManager<SqliteConnection>>>()
+        .app_data::<DbPool>()
         .unwrap()
         .get()
         .unwrap();

@@ -1,12 +1,11 @@
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
-use diesel::SqliteConnection;
-use r2d2::Pool;
-use r2d2_diesel::ConnectionManager;
+
+use crate::db::db::DbPool;
 
 #[get("/tags/all")]
 async fn get_all(req: HttpRequest) -> impl Responder {
     let conn = req
-        .app_data::<Pool<ConnectionManager<SqliteConnection>>>()
+        .app_data::<DbPool>()
         .unwrap()
         .get()
         .unwrap();
@@ -18,7 +17,7 @@ async fn get_all(req: HttpRequest) -> impl Responder {
 #[get("/tags/{item_id}")]
 async fn get_tags(req: HttpRequest, item_id: web::Path<i32>) -> impl Responder {
     let conn = req
-        .app_data::<Pool<ConnectionManager<SqliteConnection>>>()
+        .app_data::<DbPool>()
         .unwrap()
         .get()
         .unwrap();
