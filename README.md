@@ -17,11 +17,64 @@ Tapy is a tool for tagging and quickly accessing all kinds of media. Just open i
 
 Tapy consists of a backend and frontend server and can be consumed either through the provided frontend or directly through the `REST` API at `/api`.
 
-## Build-time dependencies
+## Building
 
-- Rust
+Firstly, install the `sqlite3` library
+
+```bash
+# Debian/Ubuntu
+sudo apt install sqlite3
+
+# Arch
+sudo pacman -S sqlite
+
+# Nix
+nix-env -iA nixpkgs.sqlite
+```
+
+- Add `wasm32-unknown-unknown` as a `rustc` target
+
+```bash
+rustup target add wasm32-unknown-unknown
+```
+
+- Install dependencies
+
+```bash
+cargo install trunk wasm-bindgen-cli
+```
+
+- Build frontend
+
+```bash
+pushd frontend
+trunk build --release
+popd
+```
+
+- Build backend
+
+```bash
+cargo build --release
+```
+
+## Running
+
+```bash
+cargo run
+```
+
+---
 
 ## TODO
 
 - Frontend
-    - (Working) Components for viewing and adding Items
+    - (Working) Components for
+        - viewing
+            - [ ] one
+            - [x] many
+            items
+        - adding
+            - [ ] one
+            - [ ] many
+            items
