@@ -28,3 +28,15 @@ strum_macros = "^0.24"
 strum = { version = "^0.24", features = ["derive"] }
 getrandom = { version = "^0.2.7", features = ["js"] }
 derive_more = "^0.99"
+
+[package.metadata.nix]
+app = true
+build = true
+library = true
+systems = [
+    "aarch64-linux",
+    "aarch64-darwin",
+    "i686-linux",
+    "x86_64-darwin",
+    "x86_64-linux",
+]

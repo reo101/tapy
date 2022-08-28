@@ -1,5 +1,4 @@
 target
-Cargo.lock
 .env
 common/src/db/schema.rs
 dist
