@@ -1,4 +1,4 @@
 target
 .env
 common/src/db/schema.rs
-dist
+frontend/dist

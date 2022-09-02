@@ -2,7 +2,8 @@ use crate::db::schema::items;
 use diesel::Queryable;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Clone, Serialize, Deserialize, Debug)]
+#[derive(Identifiable, Queryable, Clone, Serialize, Deserialize, Debug)]
+#[diesel(table_name = items)]
 pub struct Item {
     pub id: i32,
     pub path: String,
@@ -23,7 +24,7 @@ impl std::hash::Hash for Item {
 }
 
 #[derive(Insertable)]
-#[table_name = "items"]
+#[diesel(table_name = items)]
 pub struct NewItem<'a> {
     pub path: &'a str,
 }

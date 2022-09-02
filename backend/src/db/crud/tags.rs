@@ -1,7 +1,7 @@
-use crate::db::models::tag::{Tag, NewTag};
+use crate::db::{models::tag::{Tag, NewTag}, db::DbPoolConn};
 use diesel::{dsl::sql, prelude::*};
 
-pub fn create_tag(conn: &SqliteConnection, name: &str) -> i32 {
+pub fn create_tag(conn: &mut DbPoolConn, name: &str) -> i32 {
     use crate::db::schema::tags;
 
     let new_tag = NewTag { name };
@@ -21,7 +21,7 @@ pub fn create_tag(conn: &SqliteConnection, name: &str) -> i32 {
         .id
 }
 
-pub fn read_tags(conn: &SqliteConnection) -> Option<Vec<Tag>> {
+pub fn read_tags(conn: &mut DbPoolConn) -> Option<Vec<Tag>> {
     use crate::db::schema::tags;
 
     tags::table
@@ -29,7 +29,7 @@ pub fn read_tags(conn: &SqliteConnection) -> Option<Vec<Tag>> {
         .ok()
 }
 
-pub fn read_tag_by_id(conn: &SqliteConnection, id: i32) -> Option<Tag> {
+pub fn read_tag_by_id(conn: &mut DbPoolConn, id: i32) -> Option<Tag> {
     use crate::db::schema::tags;
 
     tags::table
@@ -38,7 +38,7 @@ pub fn read_tag_by_id(conn: &SqliteConnection, id: i32) -> Option<Tag> {
         .ok()
 }
 
-pub fn read_tag_by_name(conn: &SqliteConnection, name: &str) -> Option<Tag> {
+pub fn read_tag_by_name(conn: &mut DbPoolConn, name: &str) -> Option<Tag> {
     use crate::db::schema::tags;
 
     tags::table
@@ -47,7 +47,7 @@ pub fn read_tag_by_name(conn: &SqliteConnection, name: &str) -> Option<Tag> {
         .ok()
 }
 
-pub fn read_tags_by_item_id(conn: &SqliteConnection, id: i32) -> Option<Vec<Tag>> {
+pub fn read_tags_by_item_id(conn: &mut DbPoolConn, id: i32) -> Option<Vec<Tag>> {
     use crate::db::schema::items;
     use crate::db::schema::items_tags;
     use crate::db::schema::tags;
@@ -62,7 +62,7 @@ pub fn read_tags_by_item_id(conn: &SqliteConnection, id: i32) -> Option<Vec<Tag>
     res_tags.ok()
 }
 
-pub fn update_tag(conn: &SqliteConnection, id: i32, path: &str) -> Option<usize> {
+pub fn update_tag(conn: &mut DbPoolConn, id: i32, path: &str) -> Option<usize> {
     use crate::db::schema::tags;
 
     diesel::update(tags::table.find(id))
@@ -71,7 +71,7 @@ pub fn update_tag(conn: &SqliteConnection, id: i32, path: &str) -> Option<usize>
         .ok()
 }
 
-pub fn delete_tag(conn: &SqliteConnection, id: i32) -> Option<usize> {
+pub fn delete_tag(conn: &mut DbPoolConn, id: i32) -> Option<usize> {
     use crate::db::schema::tags;
 
     diesel::delete(tags::table.filter(tags::id.eq(id)))

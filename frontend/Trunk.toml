@@ -2,4 +2,4 @@
 # backend = "http://localhost:80/api"
 
 [clean]
-dist = "../dist"
+dist = "dist"

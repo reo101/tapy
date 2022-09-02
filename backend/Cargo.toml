@@ -14,13 +14,12 @@ openssl = "0.10.40"
 awmp = "0.8.1"
 actix-cors = "0.6.2"
 actix-web-lab = "^0"
-diesel = { version = "1.4.8", features = ["sqlite"] }
+diesel = { version = "2.0.0", features = ["sqlite", "r2d2", "returning_clauses_for_sqlite_3_35"] }
+diesel_migrations = "2.0.0"
+r2d2 = "0.8.10"
 mime_guess = "2.0.4"
 env_logger = "0.9"
 serde = { version = "^1", features = ["derive"] }
-diesel_migrations = "1.4.0"
-r2d2 = "0.8.10"
-r2d2-diesel = "1.0.0"
 dotenvy = "0.15.1"
 directories-next = "2.0.0"
 uuid = { version = "^1.1", features = ["v4"] }

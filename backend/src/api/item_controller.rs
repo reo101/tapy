@@ -1,4 +1,4 @@
-use crate::db::{util::fs::*, db::DbPool};
+use crate::db::{db::DbPool, util::fs::*};
 use std::{
     fs::File,
     io::{BufReader, Read, Write},
@@ -12,6 +12,7 @@ async fn add(req: HttpRequest, mut parts: awmp::Parts) -> impl Responder {
     let file = parts.files.take("file").pop().and_then(|f| {
         let sanitized_file_name = f.sanitized_file_name().to_string();
 
+        // FIXME: revamp whole file saving (hardcoded `/tmp` is terrible)
         let old_file_path = f.persist_in("/tmp").ok()?;
         let old_file = File::open(old_file_path).ok()?;
 
@@ -40,13 +41,10 @@ async fn add(req: HttpRequest, mut parts: awmp::Parts) -> impl Responder {
                 _ => tags_vec,
             };
 
-            let conn = req
-                .app_data::<DbPool>()
-                .unwrap()
-                .get()
-                .unwrap();
+            let conns = req.app_data::<DbPool>().unwrap();
+
             let res = crate::db::crud::items::create_item_with_tags(
-                &conn,
+                conns,
                 &file.into_os_string().into_string().unwrap(),
                 tags_vec,
             );
@@ -59,12 +57,8 @@ async fn add(req: HttpRequest, mut parts: awmp::Parts) -> impl Responder {
 
 #[get("/get/{id}")]
 async fn get_by_id(req: HttpRequest, id: web::Path<i32>) -> impl Responder {
-    let conn = req
-        .app_data::<DbPool>()
-        .unwrap()
-        .get()
-        .unwrap();
-    let res = crate::db::crud::items::read_item(&conn, *id);
+    let conn = req.app_data::<DbPool>().unwrap().get().unwrap();
+    let res = crate::db::crud::items::read_item(conn, *id);
 
     match res {
         Option::None => HttpResponse::NotFound().body(format!("Item not found with ID {}", *id)),
@@ -93,6 +87,7 @@ async fn get_by_id(req: HttpRequest, id: web::Path<i32>) -> impl Responder {
                     "Content-Disposition",
                     format!(
                         "{}; filename=\"{}\"",
+                        // TODO: make this configurable
                         if true { "inline" } else { "attachment" },
                         PathBuf::from(&path).file_name().unwrap().to_str().unwrap()
                     ),
@@ -119,12 +114,8 @@ async fn get_by_tags(req: HttpRequest, parts: awmp::Parts) -> impl Responder {
                 _ => tags_vec,
             };
 
-            let conn = req
-                .app_data::<DbPool>()
-                .unwrap()
-                .get()
-                .unwrap();
-            let res = crate::db::crud::items::read_items_by_tags(&conn, tags_vec);
+            let conns = req.app_data::<DbPool>().unwrap();
+            let res = crate::db::crud::items::read_items_by_tags(conns, tags_vec);
 
             HttpResponse::Ok().json(res)
         }
@@ -135,24 +126,17 @@ async fn get_by_tags(req: HttpRequest, parts: awmp::Parts) -> impl Responder {
 async fn get_all(req: HttpRequest) -> impl Responder {
     let tags_vec = vec![];
 
-    let conn = req
-        .app_data::<DbPool>()
-        .unwrap()
-        .get()
-        .unwrap();
-    let res = crate::db::crud::items::read_items_by_tags(&conn, tags_vec);
+    // let conn = req.app_data::<DbPool>().unwrap().get().unwrap();
+    let conns = req.app_data::<DbPool>().unwrap();
+    let res = crate::db::crud::items::read_items_by_tags(conns, tags_vec);
 
     HttpResponse::Ok().json(res)
 }
 
 #[delete("/delete/{id}")]
 async fn delete_by_id(req: HttpRequest, id: web::Path<i32>) -> impl Responder {
-    let conn = req
-        .app_data::<DbPool>()
-        .unwrap()
-        .get()
-        .unwrap();
-    let res = crate::db::crud::items::delete_item(&conn, *id);
+    let conn = req.app_data::<DbPool>().unwrap().get().unwrap();
+    let res = crate::db::crud::items::delete_item(conn, *id);
 
     match res {
         Option::Some(count) => HttpResponse::Ok().body(format!("Deleted {} item(s)", count)),

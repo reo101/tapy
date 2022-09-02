@@ -1,9 +1,12 @@
 use std::collections::HashSet;
 
-use crate::db::models::item::{Item, NewItem};
+use crate::db::{
+    db::{DbPool, DbPoolConn},
+    models::item::{Item, NewItem},
+};
 use diesel::{dsl::sql, prelude::*};
 
-pub fn create_item(conn: &SqliteConnection, path: &str) -> i32 {
+pub fn create_item(mut conn: DbPoolConn, path: &str) -> i32 {
     use crate::db::schema::items;
 
     let new_item = NewItem { path };
@@ -13,74 +16,90 @@ pub fn create_item(conn: &SqliteConnection, path: &str) -> i32 {
     diesel::insert_into(items::table)
         .values(&new_item)
         // .returning(items::id)
-        .execute(conn)
-        .expect("Error saving new item");
+        .execute(&mut conn)
+        .expect("Error saving new item"); // as i32
 
     items::table
         .find(sql("last_insert_rowid()"))
-        .get_result::<Item>(conn)
+        .get_result::<Item>(&mut conn)
         .expect("What?")
         .id
 }
 
-pub fn create_item_with_tags(conn: &SqliteConnection, path: &str, tags_vec: Vec<&str>) -> i32 {
-    let item_id = create_item(conn, path);
+pub fn create_item_with_tags(conns: &DbPool, path: &str, tags_vec: Vec<&str>) -> i32 {
+    let item_id = create_item(conns.get().unwrap(), path);
 
-    tags_vec.into_iter()
+    tags_vec
+        .into_iter()
         .map(|name| {
-            if let Some(tag) = crate::db::crud::tags::read_tag_by_name(conn, name) {
+            if let Some(tag) =
+                crate::db::crud::tags::read_tag_by_name(&mut conns.get().unwrap(), name)
+            {
                 tag.id
             } else {
-                crate::db::crud::tags::create_tag(conn, name)
+                crate::db::crud::tags::create_tag(&mut conns.get().unwrap(), name)
             }
         })
         .for_each(|tag_id| {
-            crate::db::crud::items_tags::create_item_tag(conn, item_id, tag_id);
+            crate::db::crud::items_tags::create_item_tag(
+                &mut conns.get().unwrap(),
+                item_id,
+                tag_id,
+            );
         });
 
     item_id
 }
 
-pub fn read_item(conn: &SqliteConnection, id: i32) -> Option<Item> {
+pub fn read_item(mut conn: DbPoolConn, id: i32) -> Option<Item> {
     use crate::db::schema::items;
 
-    items::table.find(id).get_result::<Item>(conn).ok()
+    items::table.find(id).get_result::<Item>(&mut conn).ok()
 }
 
-pub fn read_items_by_tags(conn: &SqliteConnection, tags_vec: Vec<&str>) -> Option<Vec<Item>> {
-    use crate::db::schema::items;
-    use crate::db::schema::items_tags;
-    use crate::db::schema::tags;
+pub fn read_items_by_tags(conns: &DbPool, tags_vec: Vec<&str>) -> Option<HashSet<i32>> {
+    use crate::db::models::item_tag::ItemTag;
 
-    let res_items = items_tags::table
-        .inner_join(items::table)
-        .inner_join(tags::table)
-        .select((items::id, items::path, tags::name))
-        .get_results::<(i32, String, String)>(conn)
-        .unwrap_or_default()
-        .into_iter()
-        .filter(|(_, _, tag)| tags_vec.is_empty() || tags_vec.contains(&tag.as_str()))
-        .map(|(id, path, _)| Item { id, path })
-        .collect::<HashSet<Item>>()
-        .into_iter()
-        .collect::<Vec<Item>>();
+    Some(match tags_vec.len() {
+        0 => todo!(),
+        _ => {
+            let tags_vec = tags_vec
+                .into_iter()
+                .map(|tag| {
+                    use crate::db::crud::tags::read_tag_by_name;
 
-    Some(res_items)
+                    read_tag_by_name(&mut conns.get().unwrap(), tag).unwrap()
+                })
+                .collect::<Vec<_>>();
+
+            ItemTag::belonging_to(&tags_vec)
+                .load::<ItemTag>(&mut conns.get().unwrap())
+                .unwrap()
+                .grouped_by(&tags_vec)
+                .into_iter()
+                .map(|vec| {
+                    vec.into_iter()
+                        .map(|item_tag| item_tag.item_id)
+                        .collect::<HashSet<_>>()
+                })
+                .fold(HashSet::new(), |acc, set| &acc & &set)
+        }
+    })
 }
 
-pub fn update_item(conn: &SqliteConnection, id: i32, path: &str) -> Option<usize> {
+pub fn update_item(mut conn: DbPoolConn, id: i32, path: &str) -> Option<usize> {
     use crate::db::schema::items;
 
     diesel::update(items::table.find(id))
         .set(items::path.eq(path))
-        .execute(conn)
+        .execute(&mut conn)
         .ok()
 }
 
-pub fn delete_item(conn: &SqliteConnection, id: i32) -> Option<usize> {
+pub fn delete_item(mut conn: DbPoolConn, id: i32) -> Option<usize> {
     use crate::db::schema::items;
 
     diesel::delete(items::table.filter(items::id.eq(id)))
-        .execute(conn)
+        .execute(&mut conn)
         .ok()
 }

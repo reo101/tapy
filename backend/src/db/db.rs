@@ -1,11 +1,13 @@
 use diesel::prelude::*;
 use dotenvy::dotenv;
-use r2d2::Pool;
-use r2d2_diesel::ConnectionManager;
+use r2d2::{Pool, PooledConnection};
+use diesel::r2d2::ConnectionManager;
 
-embed_migrations!();
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
 pub type DbPool = Pool<ConnectionManager<SqliteConnection>>;
+pub type DbPoolConn = PooledConnection<ConnectionManager<SqliteConnection>>;
 
 pub fn establish_connection() -> DbPool {
     let database_url = if cfg!(test) {
@@ -26,8 +28,8 @@ pub fn establish_connection() -> DbPool {
         .build(manager)
         .expect("Couldn't create Database Pool");
 
-    let conn: &SqliteConnection = &pool.get().unwrap();
-    embedded_migrations::run(conn).expect("Couldn't run migrations");
+    let conn: &mut SqliteConnection = &mut pool.get().unwrap();
+    conn.run_pending_migrations(MIGRATIONS).expect("Couldn't run migrations");
 
     pool
 }
