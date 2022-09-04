@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"target": "ESNEXT",
+		"module": "ESNext",
+		"moduleResolution": "node",
+    "jsx": "react-jsx",
+		"outDir": "./dist/",
+		"removeComments": false,
+		"strict": true,
+		"alwaysStrict": false,
+		"esModuleInterop": true
+	},
+	"include": [
+		"./src/tapy.plugin.tsx",
+		"./src/types/**/*.d.ts"
+	],
+	"exclude": [
+		"./node_modules/**/*"
+	]
+}
