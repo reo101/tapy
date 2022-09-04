@@ -1,13 +1,6 @@
 use reqwasm::http::Request;
-use serde::{Deserialize, Serialize};
 use yew::functional::*;
 use yew::prelude::*;
-
-#[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Debug)]
-pub struct Item {
-    pub id: i32,
-    pub path: String,
-}
 
 #[derive(Clone, Debug, PartialEq, Eq, Properties)]
 pub struct GalleryProps {
@@ -29,7 +22,7 @@ pub fn gallery(gallery_props: &GalleryProps) -> Html {
                     return;
                 }
 
-                let fetched_items: Vec<Item> =
+                let fetched_items: Vec<i32> =
                     Request::get(&format!("{}/get/all", dotenv!("BACKEND_URL")).to_owned())
                         .header("tags", tags.as_str())
                         .header("Content-Type", "application/json")
@@ -40,7 +33,15 @@ pub fn gallery(gallery_props: &GalleryProps) -> Html {
                         .await
                         .unwrap();
 
-                items.set(fetched_items);
+                items.set(
+                    fetched_items
+                        .into_iter()
+                        .map(|item_id| Item {
+                            id: item_id,
+                            tags: vec!["mqu".to_string()],
+                        })
+                        .collect(),
+                );
             });
 
             || ()
@@ -55,6 +56,12 @@ pub fn gallery(gallery_props: &GalleryProps) -> Html {
     }
 }
 
+#[derive(Clone, PartialEq, Eq)]
+pub struct Item {
+    id: i32,
+    tags: Vec<String>,
+}
+
 #[derive(Clone, Properties, PartialEq, Eq)]
 pub struct ItemListProps {
     items: Vec<Item>,
@@ -62,35 +69,29 @@ pub struct ItemListProps {
 
 #[function_component(ItemList)]
 pub fn item_list(ItemListProps { items }: &ItemListProps) -> Html {
-    fn is_something(exts: Vec<&'static str>) -> impl Fn(&Item) -> bool {
-        move |item: &Item| -> bool { exts.iter().any(|ext| item.path.ends_with(ext)) }
-    }
-
-    let is_video = is_something(vec!["mp4, webm"]);
-    let is_picture = is_something(vec!["png", "gif", "jpg", "jpeg", "svg"]);
-
     items
         .iter()
         .map(|item| {
+            let id = item.id;
+            let tags = Some(item.tags.iter().fold(String::new(), |acc, tag| {
+                [acc, tag.to_owned(), ", ".to_string()].join("")
+            }));
+
             html! {
                 <div>
-                <@{
-                    if is_video(item) {
-                        "video"
-                    } else if is_picture(item) {
-                        "img"
-                    } else {
-                        "iframe"
-                    }}
-                src = { format!("{}/get/{}", dotenv!("BACKEND_URL"), item.id) }
+                    // <@{ "iframe" }
+                    //     src = { format!("{}/get/{}", dotenv!("BACKEND_URL"), item) }
+                    //     sandbox = "allow-downloads-without-user-activation"
+                    // >
+                    <@{ "object" }
+                        data = { format!("{}/get/{}", dotenv!("BACKEND_URL"), id) }
                     >
                     </@>
-                    <span hidden=true>
-                    {
-                        // TODO: change structure to allow sending tags together with item
-                        "TODO"
-                    }
+                    if let Some(tags) = tags {
+                    <span>
+                        { tags }
                     </span>
+                }
                 </div>
             }
         })
