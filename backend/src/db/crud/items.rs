@@ -65,10 +65,10 @@ pub fn read_items_by_tags(conns: &DbPool, tags_vec: Vec<&str>) -> Option<HashSet
         _ => {
             let tags_vec = tags_vec
                 .into_iter()
-                .map(|tag| {
+                .filter_map(|tag| {
                     use crate::db::crud::tags::read_tag_by_name;
 
-                    read_tag_by_name(&mut conns.get().unwrap(), tag).unwrap()
+                    read_tag_by_name(&mut conns.get().unwrap(), tag)
                 })
                 .collect::<Vec<_>>();
 
@@ -82,7 +82,8 @@ pub fn read_items_by_tags(conns: &DbPool, tags_vec: Vec<&str>) -> Option<HashSet
                         .map(|item_tag| item_tag.item_id)
                         .collect::<HashSet<_>>()
                 })
-                .fold(HashSet::new(), |acc, set| &acc & &set)
+                .reduce(|acc, set| &acc & &set)
+                .unwrap_or_default()
         }
     })
 }
