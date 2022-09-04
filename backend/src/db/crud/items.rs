@@ -59,9 +59,15 @@ pub fn read_item(mut conn: DbPoolConn, id: i32) -> Option<Item> {
 
 pub fn read_items_by_tags(conns: &DbPool, tags_vec: Vec<&str>) -> Option<HashSet<i32>> {
     use crate::db::models::item_tag::ItemTag;
+    use crate::db::schema::items;
 
     Some(match tags_vec.len() {
-        0 => todo!(),
+        0 => items::table
+            .load::<Item>(&mut conns.get().unwrap())
+            .unwrap()
+            .into_iter()
+            .map(|elem| elem.id)
+            .collect(),
         _ => {
             let tags_vec = tags_vec
                 .into_iter()
