@@ -89,9 +89,6 @@ mod tests {
 
         let response = call_service(&app, request).await;
 
-        // dbg!(crate::db::crud::tags::read_tags(&pool.get().unwrap()));
-        // dbg!(&response);
-
         #[derive(Serialize, Deserialize)]
         struct Body(Option<Vec<Tag>>);
 
@@ -118,9 +115,6 @@ mod tests {
         let request = TestRequest::get().uri("/api/tags/all").to_request();
 
         let response = call_service(&app, request).await;
-
-        // dbg!(crate::db::crud::tags::read_tags(&pool.get().unwrap()));
-        // dbg!(&response);
 
         #[derive(Serialize, Deserialize)]
         struct Body(Option<Vec<Tag>>);
