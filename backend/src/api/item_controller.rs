@@ -126,7 +126,6 @@ async fn get_by_tags(req: HttpRequest, parts: awmp::Parts) -> impl Responder {
 async fn get_all(req: HttpRequest) -> impl Responder {
     let tags_vec = vec![];
 
-    // let conn = req.app_data::<DbPool>().unwrap().get().unwrap();
     let conns = req.app_data::<DbPool>().unwrap();
     let res = crate::db::crud::items::read_items_by_tags(conns, tags_vec);
 
